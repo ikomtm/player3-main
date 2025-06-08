@@ -47,45 +47,6 @@ String shortenPath(String fullPath, {int maxLength = 40}) {
     super.dispose();
   }
 
-  Widget _buildPlayModeButton(String label, PlayMode mode) {
-  final isSelected = temp.playMode == mode;
-
-  return GestureDetector(
-    onTap: () {
-      setState(() {
-        temp.playMode = mode;
-      });
-    },
-    child: Container(
-      key: Key('${label.replaceAll('/', '_')}_btn_frame'),
-      width: 110,
-      height: 40,
-      padding: const EdgeInsets.all(8),
-      decoration: ShapeDecoration(
-        color: isSelected ? Colors.blueAccent : const Color(0xFFD9D9D9),
-        shape: RoundedRectangleBorder(
-          side: BorderSide(
-            color: isSelected ? Colors.black : const Color(0xFF919191),
-            width: 1,
-          ),
-          borderRadius: BorderRadius.circular(4),
-        ),
-      ),
-      child: Center(
-        child: Text(
-          label,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-    ),
-  );
-}
-
   @override
   Widget buildColorButton(String label, Color color) {
   final isSelected = temp.color == color;
@@ -152,7 +113,7 @@ String shortenPath(String fullPath, {int maxLength = 40}) {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.center,
             
-              children: [
+            children: [
               Expanded(
                 child: Container(
                   height: double.infinity,
@@ -588,18 +549,72 @@ String shortenPath(String fullPath, {int maxLength = 40}) {
                                         ),
                                       ),
                                       Expanded(
-                                                key: const Key('Play_Mode_frame'),
-                                                child: Container(
-                                                  width: double.infinity,
-                                                  padding: const EdgeInsets.all(4),
-                                                  child: Row(
-                                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                                    children: [
-                                                      _buildPlayModeButton('Play/Stop', PlayMode.playStop),
-                                                      _buildPlayModeButton('Play/Pause', PlayMode.playPause),
-                                                      _buildPlayModeButton('Retrigger', PlayMode.retrigger),
-                                                    ],
-                                                  ),
+                                        key: Key('Play_Mode_frame'),
+                                        
+                                        child: Container(
+                                          width: double.infinity,
+                                          height: double.infinity,
+                                          padding: const EdgeInsets.all(4),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            mainAxisAlignment: MainAxisAlignment.start,
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            spacing: 10,
+                                            children: [
+                                              Container(
+                                                key: Key('Playstop_btn_frame'),
+                                                height: double.infinity,
+                                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                                                clipBehavior: Clip.antiAlias,
+                                                decoration: ShapeDecoration(
+                                                  color: const Color(0xFFD9D9D9),
+                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                                                ),
+                                                child: Column(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  mainAxisAlignment: MainAxisAlignment.end,
+                                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                                  spacing: 17,
+                                                  children: [
+                                                    Text(
+                                                      'Play/Stop',
+                                                      textAlign: TextAlign.center,
+                                                      style: TextStyle(
+                                                        color: Colors.black,
+                                                        fontSize: 16,
+                                                        fontFamily: 'Inter',
+                                                        fontWeight: FontWeight.w500,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              Container(
+                                                key: Key('Playpause_btn_frame'),
+                                                height: double.infinity,
+                                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                                                clipBehavior: Clip.antiAlias,
+                                                decoration: ShapeDecoration(
+                                                  color: const Color(0xFFD9D9D9),
+                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                                                ),
+                                                child: Column(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  mainAxisAlignment: MainAxisAlignment.end,
+                                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                                  spacing: 17,
+                                                  children: [
+                                                    Text(
+                                                      'Play/Pause',
+                                                      textAlign: TextAlign.center,
+                                                      style: TextStyle(
+                                                        color: Colors.black,
+                                                        fontSize: 16,
+                                                        fontFamily: 'Inter',
+                                                        fontWeight: FontWeight.w500,
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
                                               ),
                                               Container(
@@ -1114,8 +1129,11 @@ String shortenPath(String fullPath, {int maxLength = 40}) {
                     ],
                   ),
                 ),
-              );
-            
-
+              ),
+            ],
+          ),
+        ),
+    
+    );
   }
 }
