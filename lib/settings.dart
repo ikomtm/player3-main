@@ -1,15 +1,136 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'channel_model.dart';
+import 'models/channel_strip_model.dart';
+import 'models/channel_bank_model.dart';
+import 'package:file_picker/file_picker.dart';
 
-class SettingsWindow extends StatelessWidget {
+class SettingsWindow extends StatefulWidget {
   final int index;
   const SettingsWindow({super.key, required this.index});
-  
 
   @override
   State<SettingsWindow> createState() => _SettingsWindowState();
 }
+
+class _SettingsWindowState extends State<SettingsWindow> {
+  late ChannelStripModel temp;
+  late TextEditingController _nameController;
+  final Map<String, Color> colorOptions = {
+  'None': Colors.grey,
+  'Red': Colors.red,
+  'Green': Colors.green,
+  'Blue': Colors.blue,
+  'Yellow': Colors.yellow,
+  'Purple': Colors.purple,
+};
+
+String shortenPath(String fullPath, {int maxLength = 40}) {
+  if (fullPath.length <= maxLength) return fullPath;
+  final parts = fullPath.split(RegExp(r'[\\/]'));
+  String fileName = parts.last;
+  int keepLength = maxLength - fileName.length - 4;
+  if (keepLength < 0) return '.../$fileName';
+  return '...${fullPath.substring(fullPath.length - keepLength - fileName.length)}';
+}
+  @override
+  void initState() {
+    super.initState();
+    final original = context.read<ChannelBankModel>().channels[widget.index];
+    temp = original.copy();
+    _nameController = TextEditingController(text: temp.name);
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  Widget _buildPlayModeButton(String label, PlayMode mode) {
+  final isSelected = temp.playMode == mode;
+
+  return GestureDetector(
+    onTap: () {
+      setState(() {
+        temp.playMode = mode;
+      });
+    },
+    child: Container(
+      key: Key('${label.replaceAll('/', '_')}_btn_frame'),
+      width: 110,
+      height: 40,
+      padding: const EdgeInsets.all(8),
+      decoration: ShapeDecoration(
+        color: isSelected ? Colors.blueAccent : const Color(0xFFD9D9D9),
+        shape: RoundedRectangleBorder(
+          side: BorderSide(
+            color: isSelected ? Colors.black : const Color(0xFF919191),
+            width: 1,
+          ),
+          borderRadius: BorderRadius.circular(4),
+        ),
+      ),
+      child: Center(
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+  @override
+  Widget buildColorButton(String label, Color color) {
+  final isSelected = temp.color == color;
+
+  return GestureDetector(
+    onTap: () {
+      setState(() {
+        temp.color = color;
+      });
+    },
+    child: Container(
+      key: Key('${label}_btn_frame'),
+      width: 102, // фиксированная ширина
+      height: 40, // фиксированная высота
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      clipBehavior: Clip.antiAlias,
+      decoration: ShapeDecoration(
+        color: isSelected ? color.withOpacity(0.5) : const Color(0xFFD9D9D9),
+        shape: RoundedRectangleBorder(
+          side: BorderSide(
+            width: 1,
+            color: const Color(0xFF919191),
+          ),
+          borderRadius: BorderRadius.circular(4),
+        ),
+      ),
+      child: Center(
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: Colors.black,
+            fontSize: 16,
+            fontFamily: 'Inter',
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+
+
+  Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: EdgeInsets.all(20),
@@ -31,7 +152,7 @@ class SettingsWindow extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.center,
             
-            children: [
+              children: [
               Expanded(
                 child: Container(
                   height: double.infinity,
@@ -303,7 +424,7 @@ class SettingsWindow extends StatelessWidget {
                                           spacing: 10,
                                           children: [
                                             Text(
-                                              'Playback Range:',
+                                              'Play Range:',
                                               textAlign: TextAlign.center,
                                               style: TextStyle(
                                                 color: Colors.black,
@@ -344,399 +465,122 @@ class SettingsWindow extends StatelessWidget {
                                           decoration: ShapeDecoration(
                                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                                           ),
-                                          child: Row(
-                                            mainAxisAlignment: MainAxisAlignment.start,
-                                            crossAxisAlignment: CrossAxisAlignment.center,
-                                            children: [
-                                              Expanded(
-                                                child: Consumer<ChannelModel>(
-                                                  builder: (context, model, _) {
-                                                    final controller = TextEditingController(text: model.name);
-
-                                                    return TextField(
-                                                      key: const Key('Name_textedit_field'),
-                                                      controller: controller,
-                                                      onChanged: (value) => model.name = value,
-                                                      style: const TextStyle(
-                                                        fontSize: 20,
-                                                        fontWeight: FontWeight.w500,
-                                                        fontFamily: 'Inter',
-                                                        color: Colors.black,
-                                                      ),
-                                                      decoration: InputDecoration(
-                                                        contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                                        filled: true,
-                                                        fillColor: const Color(0xFFD9D9D9),
-                                                        border: OutlineInputBorder(
-                                                          borderRadius: BorderRadius.circular(4),
-                                                          borderSide: BorderSide.none,
-                                                        ),
-                                                      ),
-                                                    );
-                                                  },
-                                                ),
+                                          child: TextField(
+                                            key: const Key('Name_textedit_field'),
+                                            controller: _nameController,
+                                            onChanged: (val) {
+                                              setState(() {
+                                                temp.name = val;
+                                              });
+                                            },
+                                            style: const TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.w500,
+                                              fontFamily: 'Inter',
+                                              color: Colors.black,
+                                            ),
+                                            decoration: InputDecoration(
+                                              contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                              filled: true,
+                                              fillColor: Color(0xFFD9D9D9),
+                                              border: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(4),
+                                                borderSide: BorderSide.none,
                                               ),
-                                            ],
+                                            ),
                                           ),
                                         ),
                                       ),
+
                                       Expanded(
                                         key: Key('Color_frame'),
-                                        // left: 10,
-                                        // top: 64.89,
                                         child: Container(
                                           width: double.infinity,
-                                          height: 44.89,
-                                          clipBehavior: Clip.antiAlias,
-                                          decoration: BoxDecoration(),
-                                          child: Row(
-                                            children: [
-                                              Positioned(
-                                                key: Key('Green_btn_frame'),
-                                                left: 628,
-                                                top: 4,
-                                                child: Container(
-                                                  width: 102,
-                                                  height: 40,
-                                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                                  clipBehavior: Clip.antiAlias,
-                                                  decoration: ShapeDecoration(
-                                                    color: const Color(0xFFD9D9D9),
-                                                    shape: RoundedRectangleBorder(
-                                                      side: BorderSide(
-                                                        width: 1,
-                                                        color: const Color(0xFF919191),
-                                                      ),
-                                                      borderRadius: BorderRadius.circular(4),
-                                                    ),
-                                                  ),
-                                                  child: Column(
-                                                    mainAxisSize: MainAxisSize.min,
-                                                    mainAxisAlignment: MainAxisAlignment.end,
-                                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                                    spacing: 10,
-                                                    children: [
-                                                      Text(
-                                                        'Green',
-                                                        textAlign: TextAlign.center,
-                                                        style: TextStyle(
-                                                          color: Colors.black,
-                                                          fontSize: 16,
-                                                          fontFamily: 'Inter',
-                                                          fontWeight: FontWeight.w500,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                              Positioned(
-                                                key: Key('Blue_btn_frame'),
-                                                left: 524,
-                                                top: 4,
-                                                child: Container(
-                                                  width: 102,
-                                                  height: 40,
-                                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                                  clipBehavior: Clip.antiAlias,
-                                                  decoration: ShapeDecoration(
-                                                    color: const Color(0xFFD9D9D9),
-                                                    shape: RoundedRectangleBorder(
-                                                      side: BorderSide(
-                                                        width: 1,
-                                                        color: const Color(0xFF919191),
-                                                      ),
-                                                      borderRadius: BorderRadius.circular(4),
-                                                    ),
-                                                  ),
-                                                  child: Column(
-                                                    mainAxisSize: MainAxisSize.min,
-                                                    mainAxisAlignment: MainAxisAlignment.end,
-                                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                                    spacing: 10,
-                                                    children: [
-                                                      Text(
-                                                        'Blue',
-                                                        textAlign: TextAlign.center,
-                                                        style: TextStyle(
-                                                          color: Colors.black,
-                                                          fontSize: 16,
-                                                          fontFamily: 'Inter',
-                                                          fontWeight: FontWeight.w500,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                              Positioned(
-                                                key: Key('Cyan_btn_frame'),
-                                                left: 420,
-                                                top: 4,
-                                                child: Container(
-                                                  width: 102,
-                                                  height: 40,
-                                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                                  clipBehavior: Clip.antiAlias,
-                                                  decoration: ShapeDecoration(
-                                                    color: const Color(0xFFD9D9D9),
-                                                    shape: RoundedRectangleBorder(
-                                                      side: BorderSide(
-                                                        width: 1,
-                                                        color: const Color(0xFF919191),
-                                                      ),
-                                                      borderRadius: BorderRadius.circular(4),
-                                                    ),
-                                                  ),
-                                                  child: Column(
-                                                    mainAxisSize: MainAxisSize.min,
-                                                    mainAxisAlignment: MainAxisAlignment.end,
-                                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                                    spacing: 10,
-                                                    children: [
-                                                      Text(
-                                                        'Cyan',
-                                                        textAlign: TextAlign.center,
-                                                        style: TextStyle(
-                                                          color: Colors.black,
-                                                          fontSize: 16,
-                                                          fontFamily: 'Inter',
-                                                          fontWeight: FontWeight.w500,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                              Positioned(
-                                                key: Key('Magemta_btn_frame'),
-                                                left: 316,
-                                                top: 4,
-                                                child: Container(
-                                                  width: 102,
-                                                  height: 40,
-                                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                                  clipBehavior: Clip.antiAlias,
-                                                  decoration: ShapeDecoration(
-                                                    color: const Color(0xFFD9D9D9),
-                                                    shape: RoundedRectangleBorder(
-                                                      side: BorderSide(
-                                                        width: 1,
-                                                        color: const Color(0xFF919191),
-                                                      ),
-                                                      borderRadius: BorderRadius.circular(4),
-                                                    ),
-                                                  ),
-                                                  child: Column(
-                                                    mainAxisSize: MainAxisSize.min,
-                                                    mainAxisAlignment: MainAxisAlignment.end,
-                                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                                    spacing: 10,
-                                                    children: [
-                                                      Text(
-                                                        'Magenta',
-                                                        textAlign: TextAlign.center,
-                                                        style: TextStyle(
-                                                          color: Colors.black,
-                                                          fontSize: 16,
-                                                          fontFamily: 'Inter',
-                                                          fontWeight: FontWeight.w500,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                              Positioned(
-                                                key: Key('Red_btn_frame'),
-                                                left: 212,
-                                                top: 4,
-                                                child: Container(
-                                                  width: 102,
-                                                  height: 40,
-                                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                                  clipBehavior: Clip.antiAlias,
-                                                  decoration: ShapeDecoration(
-                                                    color: const Color(0xFFD9D9D9),
-                                                    shape: RoundedRectangleBorder(
-                                                      side: BorderSide(
-                                                        width: 1,
-                                                        color: const Color(0xFF919191),
-                                                      ),
-                                                      borderRadius: BorderRadius.circular(4),
-                                                    ),
-                                                  ),
-                                                  child: Column(
-                                                    mainAxisSize: MainAxisSize.min,
-                                                    mainAxisAlignment: MainAxisAlignment.end,
-                                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                                    spacing: 10,
-                                                    children: [
-                                                      Text(
-                                                        'Red',
-                                                        textAlign: TextAlign.center,
-                                                        style: TextStyle(
-                                                          color: Colors.black,
-                                                          fontSize: 16,
-                                                          fontFamily: 'Inter',
-                                                          fontWeight: FontWeight.w500,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                              Positioned(
-                                                key: Key('Yellow_btn_frame'),
-                                                left: 108,
-                                                top: 4,
-                                                child: Container(
-                                                  width: 102,
-                                                  height: 40,
-                                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                                  clipBehavior: Clip.antiAlias,
-                                                  decoration: ShapeDecoration(
-                                                    color: const Color(0xFFD9D9D9),
-                                                    shape: RoundedRectangleBorder(
-                                                      side: BorderSide(
-                                                        width: 1,
-                                                        color: const Color(0xFF919191),
-                                                      ),
-                                                      borderRadius: BorderRadius.circular(4),
-                                                    ),
-                                                  ),
-                                                  child: Column(
-                                                    mainAxisSize: MainAxisSize.min,
-                                                    mainAxisAlignment: MainAxisAlignment.end,
-                                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                                    spacing: 10,
-                                                    children: [
-                                                      Text(
-                                                        'Yelllow',
-                                                        textAlign: TextAlign.center,
-                                                        style: TextStyle(
-                                                          color: Colors.black,
-                                                          fontSize: 16,
-                                                          fontFamily: 'Inter',
-                                                          fontWeight: FontWeight.w500,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                              Positioned(
-                                                key: Key('None_btn_frame'),
-                                                left: 4,
-                                                top: 4,
-                                                child: Container(
-                                                  width: 102,
-                                                  height: 40,
-                                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                                  clipBehavior: Clip.antiAlias,
-                                                  decoration: ShapeDecoration(
-                                                    color: const Color(0xFFD9D9D9),
-                                                    shape: RoundedRectangleBorder(
-                                                      side: BorderSide(
-                                                        width: 1,
-                                                        color: const Color(0xFF919191),
-                                                      ),
-                                                      borderRadius: BorderRadius.circular(4),
-                                                    ),
-                                                  ),
-                                                  child: Column(
-                                                    mainAxisSize: MainAxisSize.min,
-                                                    mainAxisAlignment: MainAxisAlignment.end,
-                                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                                    spacing: 10,
-                                                    children: [
-                                                      Text(
-                                                        'None',
-                                                        textAlign: TextAlign.center,
-                                                        style: TextStyle(
-                                                          color: Colors.black,
-                                                          fontSize: 16,
-                                                          fontFamily: 'Inter',
-                                                          fontWeight: FontWeight.w500,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
+                                          padding: const EdgeInsets.all(4),
+                                          child: Wrap(
+                                            spacing: 8,
+                                            runSpacing: 8,
+                                            children: colorOptions.entries
+                                                .map((entry) => buildColorButton(entry.key, entry.value))
+                                                .toList(),
                                           ),
                                         ),
                                       ),
+                                          
                                       Expanded(
-                                        key: Key('File_Name_frame'),
-                                        // left: 10,
-                                        // top: 119.78,
+                                        key: const Key('File_Name_frame'),
                                         child: Container(
                                           width: double.infinity,
-                                          height: 52,
                                           padding: const EdgeInsets.all(4),
                                           clipBehavior: Clip.antiAlias,
-                                          decoration: BoxDecoration(),
+                                          decoration: ShapeDecoration(
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                                          ),
                                           child: Row(
-                                            mainAxisSize: MainAxisSize.min,
                                             mainAxisAlignment: MainAxisAlignment.start,
-                                            crossAxisAlignment: CrossAxisAlignment.center,
-                                            // spacing: 10,
                                             children: [
+                                              // Текстовое поле с именем файла
                                               Expanded(
                                                 child: Container(
-                                                  key: Key('File_Name_text_frame'),
-                                                  height: double.infinity,
-                                                  padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
-                                                  clipBehavior: Clip.antiAlias,
+                                                  key: const Key('File_Name_text_frame'),
+                                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
                                                   decoration: ShapeDecoration(
                                                     color: const Color(0xFFD9D9D9),
-                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius: BorderRadius.circular(4),
+                                                    ),
                                                   ),
-                                                  child: Row(
-                                                    mainAxisSize: MainAxisSize.min,
-                                                    mainAxisAlignment: MainAxisAlignment.start,
-                                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                                    spacing: 10,
-                                                    children: [
-                                                      Text(
-                                                        '/User/.../...',
-                                                        style: TextStyle(
-                                                          color: Colors.black,
-                                                          fontSize: 16,
-                                                          fontFamily: 'Inter',
-                                                          fontWeight: FontWeight.w500,
-                                                        ),
-                                                      ),
-                                                    ],
+                                                  child: Text(
+                                                    temp.filePath.isEmpty
+                                                        ? 'No file selected'
+                                                        : shortenPath(temp.filePath, maxLength: 40),
+                                                    overflow: TextOverflow.ellipsis,
+                                                    style: const TextStyle(
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.w400,
+                                                      fontFamily: 'Inter',
+                                                      color: Colors.black,
+                                                    ),
                                                   ),
                                                 ),
                                               ),
-                                              Container(
-                                                key: Key('Browse_btn_frame'),
-                                                height: double.infinity,
-                                                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 7),
-                                                decoration: ShapeDecoration(
-                                                  color: const Color(0xFFD9D9D9),
-                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                                                ),
-                                                child: Column(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  mainAxisAlignment: MainAxisAlignment.end,
-                                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                                  spacing: 10,
-                                                  children: [
-                                                    Text(
-                                                      'Browse...',
+                                              const SizedBox(width: 8),
+                                              // Кнопка Browse
+                                              GestureDetector(
+                                                onTap: () async {
+                                                 FilePickerResult? result = await FilePicker.platform.pickFiles(
+                                                    type: FileType.custom,
+                                                    allowedExtensions: ['mp3', 'wav', 'aiff'], // нужные тебе форматы
+                                                  );
+
+                                                  if (result != null && result.files.single.path != null) {
+                                                    setState(() {
+                                                      temp.filePath = result.files.single.path!;
+                                                    });
+                                                  }
+                                                },
+                                                child: Container(
+                                                  key: const Key('Browse_btn_frame'),
+                                                  width: 100,
+                                                  height: 40,
+                                                  padding: const EdgeInsets.all(8),
+                                                  decoration: ShapeDecoration(
+                                                    color: const Color(0xFFD9D9D9),
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius: BorderRadius.circular(4),
+                                                    ),
+                                                  ),
+                                                  child: const Center(
+                                                    child: Text(
+                                                      'Browse',
                                                       style: TextStyle(
-                                                        color: Colors.black,
                                                         fontSize: 16,
-                                                        fontFamily: 'Inter',
                                                         fontWeight: FontWeight.w500,
+                                                        fontFamily: 'Inter',
+                                                        color: Colors.black,
                                                       ),
                                                     ),
-                                                  ],
+                                                  ),
                                                 ),
                                               ),
                                             ],
@@ -744,73 +588,18 @@ class SettingsWindow extends StatelessWidget {
                                         ),
                                       ),
                                       Expanded(
-                                        key: Key('Play_Mode_frame'),
-                                        // left: 10,
-                                        // top: 174.67,
-                                        child: Container(
-                                          width: double.infinity,
-                                          height: double.infinity,
-                                          padding: const EdgeInsets.all(4),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            mainAxisAlignment: MainAxisAlignment.start,
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            spacing: 10,
-                                            children: [
-                                              Container(
-                                                key: Key('Playstop_btn_frame'),
-                                                height: double.infinity,
-                                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                                                clipBehavior: Clip.antiAlias,
-                                                decoration: ShapeDecoration(
-                                                  color: const Color(0xFFD9D9D9),
-                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                                                ),
-                                                child: Column(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  mainAxisAlignment: MainAxisAlignment.end,
-                                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                                  spacing: 17,
-                                                  children: [
-                                                    Text(
-                                                      'Play/Stop',
-                                                      textAlign: TextAlign.center,
-                                                      style: TextStyle(
-                                                        color: Colors.black,
-                                                        fontSize: 16,
-                                                        fontFamily: 'Inter',
-                                                        fontWeight: FontWeight.w500,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              Container(
-                                                key: Key('Playpause_btn_frame'),
-                                                height: double.infinity,
-                                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                                                clipBehavior: Clip.antiAlias,
-                                                decoration: ShapeDecoration(
-                                                  color: const Color(0xFFD9D9D9),
-                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                                                ),
-                                                child: Column(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  mainAxisAlignment: MainAxisAlignment.end,
-                                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                                  spacing: 17,
-                                                  children: [
-                                                    Text(
-                                                      'Play/Pause',
-                                                      textAlign: TextAlign.center,
-                                                      style: TextStyle(
-                                                        color: Colors.black,
-                                                        fontSize: 16,
-                                                        fontFamily: 'Inter',
-                                                        fontWeight: FontWeight.w500,
-                                                      ),
-                                                    ),
-                                                  ],
+                                                key: const Key('Play_Mode_frame'),
+                                                child: Container(
+                                                  width: double.infinity,
+                                                  padding: const EdgeInsets.all(4),
+                                                  child: Row(
+                                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                                    children: [
+                                                      _buildPlayModeButton('Play/Stop', PlayMode.playStop),
+                                                      _buildPlayModeButton('Play/Pause', PlayMode.playPause),
+                                                      _buildPlayModeButton('Retrigger', PlayMode.retrigger),
+                                                    ],
+                                                  ),
                                                 ),
                                               ),
                                               Container(
@@ -1251,75 +1040,82 @@ class SettingsWindow extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           spacing: 17,
                           children: [
-                            Container(
-                              key:Key('Save_btn_frame'),
-                              width: 120,
-                              height: double.infinity,
-                              padding: const EdgeInsets.all(4),
-                              clipBehavior: Clip.antiAlias,
-                              decoration: ShapeDecoration(
-                                color: const Color(0xFFD9D9D9),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                spacing: 10,
-                                children: [
-                                  Text(
-                                    'Save',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 18,
-                                      fontFamily: 'Inter',
-                                      fontWeight: FontWeight.w500,
+                            GestureDetector(
+                              onTap: () {
+                                context.read<ChannelBankModel>().updateChannel(widget.index, temp);
+                                Navigator.of(context).pop();
+                              },
+                              child: Container(
+                                key: Key('Save_btn_frame'),
+                                width: 120,
+                                height: double.infinity,
+                                padding: const EdgeInsets.all(4),
+                                clipBehavior: Clip.antiAlias,
+                                decoration: ShapeDecoration(
+                                  color: const Color(0xFFD9D9D9),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      'Save',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 18,
+                                        fontFamily: 'Inter',
+                                        fontWeight: FontWeight.w500,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
-                            Container(
-                              key:Key('Cancel_btn_frame'),
-                              width: 120,
-                              height: double.infinity,
-                              padding: const EdgeInsets.all(4),
-                              clipBehavior: Clip.antiAlias,
-                              decoration: ShapeDecoration(
-                                color: const Color(0xFFD9D9D9),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                spacing: 10,
-                                children: [
-                                  Text(
-                                    'Cancel',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 18,
-                                      fontFamily: 'Inter',
-                                      fontWeight: FontWeight.w500,
-                                    ),
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: Container(
+                                key:Key('Cancel_btn_frame'),
+                                width: 120,
+                                height: double.infinity,
+                                padding: const EdgeInsets.all(4),
+                                clipBehavior: Clip.antiAlias,
+                                decoration: ShapeDecoration(
+                                  color: const Color(0xFFD9D9D9),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                                ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    spacing: 10,
+                                    children: [
+                                      Text(
+                                        'Cancel',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 18,
+                                          fontFamily: 'Inter',
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ],
                               ),
                             ),
-                          ],
+                          ],                     
                         ),
                       ),
                     ],
                   ),
                 ),
-              ),
-            ],
-          ),
-        ),
-    
-    );
+              );
+            
+
   }
 }

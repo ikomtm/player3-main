@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 
+enum PlayMode {
+  playStop,
+  playPause,
+  retrigger,
+}
+
 class ChannelStripModel {
   String name;
   Color color;
@@ -7,6 +13,7 @@ class ChannelStripModel {
   double volume;
   Duration startTime;
   Duration stopTime;
+  PlayMode playMode;
 
   ChannelStripModel({
     required this.name,
@@ -15,6 +22,7 @@ class ChannelStripModel {
     required this.volume,
     required this.startTime,
     required this.stopTime,
+    required this.playMode,
   });
 
   ChannelStripModel copy() {
@@ -25,6 +33,7 @@ class ChannelStripModel {
       volume: volume,
       startTime: startTime,
       stopTime: stopTime,
+      playMode: playMode,
     );
   }
 }

@@ -1,13 +1,24 @@
-
 import 'package:flutter/material.dart';
-import 'channel1.dart';
 import 'package:provider/provider.dart';
-import 'channel_model.dart'; // импорт модели
+
+import 'channel1.dart';
+import 'models/channel_bank_model.dart';
+import 'models/channel_strip_model.dart';
 
 void main() {
   runApp(
     ChangeNotifierProvider(
-      create: (_) => Channel1(index: index),
+      create: (_) => ChannelBankModel(
+       List.generate(18, (index) => ChannelStripModel(
+        name: 'Channel ${index + 1}',
+        color: Colors.grey,
+        filePath: '',
+        volume: 0.5,
+        startTime: Duration.zero,
+        stopTime: Duration.zero,
+        playMode: PlayMode.playStop,
+      )),
+    ),
       child: const MyApp(),
     ),
   );
@@ -24,6 +35,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color.fromARGB(255, 18, 32, 47),
       ),
       home: const MainPage(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
@@ -31,41 +43,29 @@ class MyApp extends StatelessWidget {
 class MainPage extends StatelessWidget {
   const MainPage({super.key});
 
+  Widget buildRow(int rowIndex, int offset) {
+    return Row(
+      children: List.generate(9, (i) {
+        return Expanded(
+          child: Container(
+            key: Key('Column_${rowIndex}-${i + 1}'),
+            margin: const EdgeInsets.all(4),
+            child: Channel1(index: i + offset),
+          ),
+        );
+      }),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Column(
         children: [
           const SizedBox(height: 20),
-          // Row 1
-          Row(
-            children: List.generate(9, (index) {
-              return Expanded(
-                child: Container(
-                  key: Key('Column_1-${index + 1}'),
-                  margin: const EdgeInsets.all(4),
-                  child: index < 8
-                      ? Channel1(id: '1-${index + 1}')
-                      : const SizedBox.shrink(), // пустая последняя колонка
-                ),
-              );
-            }),
-          ),
+          buildRow(1, 0),  // Row 1: indexes 0–8
           const SizedBox(height: 2),
-          // Row 2
-          Row(
-            children: List.generate(9, (index) {
-              return Expanded(
-                child: Container(
-                  key: Key('Column_2-${index + 1}'),
-                  margin: const EdgeInsets.all(4),
-                  child: index < 8
-                      ? Channel1(id: '2-${index + 1}')
-                      : const SizedBox.shrink(), // Master колонка пока пустая
-                ),
-              );
-            }),
-          ),
+          buildRow(2, 9),  // Row 2: indexes 9–17
         ],
       ),
     );

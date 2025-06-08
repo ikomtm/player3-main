@@ -19,7 +19,8 @@ class Channel1 extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(4),
       decoration: ShapeDecoration(
-        color: const Color(0xFF868686),
+        color: context.watch<ChannelBankModel>().channels[index].color,
+
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),
@@ -30,7 +31,7 @@ class Channel1 extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            key: Key('Name_frame'),
+            key: const Key('Name_frame'),
             width: double.infinity,
             height: 32,
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
@@ -41,32 +42,30 @@ class Channel1 extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Consumer<ChannelModel>(
-                  builder: (context, model, _) => Text(
-                    key: const Key('Name_label'),
-                    model.name,
-                    style: const TextStyle(
-                      color: Colors.black,
-                      fontSize: 16,
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w400,
-                      ),
-                    ),
+                Text(
+                  key: const Key('Name_label'),
+                  context.watch<ChannelBankModel>().channels[index].name,
+                  style: const TextStyle(
+                    color: Colors.black,
+                    fontSize: 16,
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w400,
                   ),
+                ),
                 GestureDetector(
                   onTap: () {
                     showDialog(
                       context: context,
-                      builder: (context) => SettingsWindow(),
-                      );
+                      builder: (context) => SettingsWindow(index: index),
+                    );
                   },
                   child: Container(
-                    key: Key('settings_frame'),
-                    constraints: BoxConstraints.tightFor(width: 28, height: 28),
+                    key: const Key('settings_frame'),
+                    constraints: const BoxConstraints.tightFor(width: 28, height: 28),
                     decoration: ShapeDecoration(
-                      color: Color(0xFFD5D5D5),
+                      color: const Color(0xFFD5D5D5),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-                  ),
+                    ),
                     child: const Center(
                       child: Text(
                         '...',
