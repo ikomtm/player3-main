@@ -3,14 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:player3/settings.dart';
 import 'package:provider/provider.dart';
 import 'channel_model.dart';
+import 'package:provider/provider.dart';
+import 'models/channel_bank_model.dart';
 
 
 class Channel1 extends StatelessWidget {
-  final String id;
-  const Channel1({Key? key, required this.id}) : super(key: key);
+  final int index;
+  const Channel1({super.key, required this.index});
 
   @override
   Widget build(BuildContext context) {
+    final channel = context.watch<ChannelBankModel>().channels[index];
     return Container(
       key: Key('Channel1_\$id'),
       width: double.infinity,

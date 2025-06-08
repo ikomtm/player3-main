@@ -7,7 +7,7 @@ import 'channel_model.dart'; // импорт модели
 void main() {
   runApp(
     ChangeNotifierProvider(
-      create: (_) => ChannelModel('Channel1'),
+      create: (_) => Channel1(index: index),
       child: const MyApp(),
     ),
   );

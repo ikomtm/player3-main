@@ -3,10 +3,13 @@ import 'package:provider/provider.dart';
 import 'channel_model.dart';
 
 class SettingsWindow extends StatelessWidget {
-  const SettingsWindow({super.key});
+  final int index;
+  const SettingsWindow({super.key, required this.index});
+  
 
   @override
-  Widget build(BuildContext context) {
+  State<SettingsWindow> createState() => _SettingsWindowState();
+}
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: EdgeInsets.all(20),
