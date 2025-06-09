@@ -2,9 +2,17 @@
 import 'package:flutter/material.dart';
 import 'package:player3/settings.dart';
 import 'package:provider/provider.dart';
-import 'channel_model.dart';
-import 'package:provider/provider.dart';
 import 'models/channel_bank_model.dart';
+import 'models/channel_strip_model.dart';
+import 'package:just_audio/just_audio.dart';
+
+String formatDuration(Duration d) {
+  String twoDigits(int n) => n.toString().padLeft(2, '0');
+  final h = twoDigits(d.inHours);
+  final m = twoDigits(d.inMinutes.remainder(60));
+  final s = twoDigits(d.inSeconds.remainder(60));
+  return '$h:$m:$s';
+}
 
 
 class Channel1 extends StatelessWidget {
@@ -15,11 +23,11 @@ class Channel1 extends StatelessWidget {
   Widget build(BuildContext context) {
     final channel = context.watch<ChannelBankModel>().channels[index];
     return Container(
-      key: Key('Channel1_\$id'),
+      key: Key('Channel1_\$index'),
       width: double.infinity,
       padding: const EdgeInsets.all(4),
       decoration: ShapeDecoration(
-        color: context.watch<ChannelBankModel>().channels[index].color,
+        color: channel.color,
 
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
@@ -44,7 +52,7 @@ class Channel1 extends StatelessWidget {
               children: [
                 Text(
                   key: const Key('Name_label'),
-                  context.watch<ChannelBankModel>().channels[index].name,
+                  channel.name,
                   style: const TextStyle(
                     color: Colors.black,
                     fontSize: 16,
@@ -191,15 +199,15 @@ class Channel1 extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 1),
             clipBehavior: Clip.antiAlias,
             decoration: const BoxDecoration(),
-            child: const Column(
+            child: Column(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  key: Key('Start_timecode'),
-                  '00:00:00:00',
-                  style: TextStyle(
+                  key: const Key('Start_timecode'),
+                  formatDuration(channel.startTime),
+                  style: const TextStyle(
                     color: Colors.black,
                     fontSize: 16,
                     fontFamily: 'Inter',
@@ -207,9 +215,9 @@ class Channel1 extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  key: Key('Stop_timecode'),
-                  '03:18:24:05',
-                  style: TextStyle(
+                  key: const Key('Stop_timecode'),
+                  formatDuration(channel.stopTime),
+                  style: const TextStyle(
                     color: Colors.black,
                     fontSize: 16,
                     fontFamily: 'Inter',
@@ -219,42 +227,90 @@ class Channel1 extends StatelessWidget {
               ],
             ),
           ),
-          Container(
-            key: Key('knob_frame'),
-            width: double.infinity,
-            height: 124,
-            clipBehavior: Clip.antiAlias,
-            decoration: const BoxDecoration(),            
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Container(                  
-                  key: Key('knob'),
-                  width: 120,
-                  height: 120,
-                  decoration: ShapeDecoration(
-                    color: const Color(0xFFCBCBCB),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(17),
+          GestureDetector(
+            onTap: () async {
+              final channel = context.read<ChannelBankModel>().channels[index];
+              final player = channel.player;
+              if (channel.filePath.isEmpty) return;
+
+              Future<void> loadSource() async {
+                await player.setAudioSource(
+                  ClippingAudioSource(
+                    start: channel.startTime,
+                    end: channel.stopTime,
+                    child: AudioSource.file(channel.filePath),
+                  ),
+                );
+              }
+
+              switch (channel.playMode) {
+                case PlayMode.playStop:
+                  if (player.playing) {
+                    await player.stop();
+                    await player.seek(channel.startTime);
+                  } else {
+                    if (player.audioSource == null) {
+                      await loadSource();
+                    } else {
+                      await player.seek(channel.startTime);
+                    }
+                    await player.play();
+                  }
+                  break;
+                case PlayMode.playPause:
+                  if (player.playing) {
+                    await player.pause();
+                  } else {
+                    if (player.audioSource == null) {
+                      await loadSource();
+                    }
+                    await player.seek(channel.startTime);
+                    await player.play();
+                  }
+                  break;
+                case PlayMode.retrigger:
+                  await player.stop();
+                  await loadSource();
+                  await player.play();
+                  break;
+              }
+            },
+            child: Container(
+              key: const Key('knob_frame'),
+              width: double.infinity,
+              height: 124,
+              clipBehavior: Clip.antiAlias,
+              decoration: const BoxDecoration(),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    key: const Key('knob'),
+                    width: 120,
+                    height: 120,
+                    decoration: ShapeDecoration(
+                      color: const Color(0xFFCBCBCB),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(17),
+                      ),
                     ),
                   ),
-                ),
-                
-                Container(
-                  key: Key('knob_label'),
-                  alignment: Alignment.center,
-                  child: Text(
-                    '1',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 36,
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w400,
+                  Container(
+                    key: const Key('knob_label'),
+                    alignment: Alignment.center,
+                    child: const Text(
+                      '1',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 36,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w400,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],

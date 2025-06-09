@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'channel_model.dart';
 import 'models/channel_strip_model.dart';
 import 'models/channel_bank_model.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
 class SettingsWindow extends StatefulWidget {
   final int index;
@@ -16,6 +16,9 @@ class SettingsWindow extends StatefulWidget {
 class _SettingsWindowState extends State<SettingsWindow> {
   late ChannelStripModel temp;
   late TextEditingController _nameController;
+  late TextEditingController _startController;
+  late TextEditingController _endController;
+  final timeFormatter = MaskTextInputFormatter(mask: '##:##:##', filter: {'#': RegExp(r'[0-9]')});
   final Map<String, Color> colorOptions = {
   'None': Colors.grey,
   'Red': Colors.red,
@@ -33,21 +36,41 @@ String shortenPath(String fullPath, {int maxLength = 40}) {
   if (keepLength < 0) return '.../$fileName';
   return '...${fullPath.substring(fullPath.length - keepLength - fileName.length)}';
 }
+
+String formatDuration(Duration d) {
+  String twoDigits(int n) => n.toString().padLeft(2, '0');
+  final h = twoDigits(d.inHours);
+  final m = twoDigits(d.inMinutes.remainder(60));
+  final s = twoDigits(d.inSeconds.remainder(60));
+  return '$h:$m:$s';
+}
+
+Duration parseDuration(String text) {
+  final parts = text.split(':');
+  if (parts.length != 3) return Duration.zero;
+  final h = int.tryParse(parts[0]) ?? 0;
+  final m = int.tryParse(parts[1]) ?? 0;
+  final s = int.tryParse(parts[2]) ?? 0;
+  return Duration(hours: h, minutes: m, seconds: s);
+}
   @override
   void initState() {
     super.initState();
     final original = context.read<ChannelBankModel>().channels[widget.index];
     temp = original.copy();
     _nameController = TextEditingController(text: temp.name);
+    _startController = TextEditingController(text: formatDuration(temp.startTime));
+    _endController = TextEditingController(text: formatDuration(temp.stopTime));
   }
 
   @override
   void dispose() {
     _nameController.dispose();
+    _startController.dispose();
+    _endController.dispose();
     super.dispose();
   }
 
-  @override
   Widget buildColorButton(String label, Color color) {
   final isSelected = temp.color == color;
 
@@ -511,12 +534,17 @@ String shortenPath(String fullPath, {int maxLength = 40}) {
                                                 onTap: () async {
                                                  FilePickerResult? result = await FilePicker.platform.pickFiles(
                                                     type: FileType.custom,
-                                                    allowedExtensions: ['mp3', 'wav', 'aiff'], // нужные тебе форматы
+                                                    allowedExtensions: ['mp3', 'wav', 'aiff'],
                                                   );
 
                                                   if (result != null && result.files.single.path != null) {
+                                                    temp.filePath = result.files.single.path!;
+                                                    Duration? d = await temp.player.setFilePath(temp.filePath);
                                                     setState(() {
-                                                      temp.filePath = result.files.single.path!;
+                                                      temp.startTime = Duration.zero;
+                                                      temp.stopTime = d ?? Duration.zero;
+                                                      _startController.text = formatDuration(temp.startTime);
+                                                      _endController.text = formatDuration(temp.stopTime);
                                                     });
                                                   }
                                                 },
@@ -550,7 +578,7 @@ String shortenPath(String fullPath, {int maxLength = 40}) {
                                       ),
                                       Expanded(
                                         key: Key('Play_Mode_frame'),
-                                        
+
                                         child: Container(
                                           width: double.infinity,
                                           height: double.infinity,
@@ -561,88 +589,109 @@ String shortenPath(String fullPath, {int maxLength = 40}) {
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             spacing: 10,
                                             children: [
-                                              Container(
-                                                key: Key('Playstop_btn_frame'),
-                                                height: double.infinity,
-                                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                                                clipBehavior: Clip.antiAlias,
-                                                decoration: ShapeDecoration(
-                                                  color: const Color(0xFFD9D9D9),
-                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                                                ),
-                                                child: Column(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  mainAxisAlignment: MainAxisAlignment.end,
-                                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                                  spacing: 17,
-                                                  children: [
-                                                    Text(
-                                                      'Play/Stop',
-                                                      textAlign: TextAlign.center,
-                                                      style: TextStyle(
-                                                        color: Colors.black,
-                                                        fontSize: 16,
-                                                        fontFamily: 'Inter',
-                                                        fontWeight: FontWeight.w500,
+                                              GestureDetector(
+                                                onTap: () {
+                                                  setState(() {
+                                                    temp.playMode = PlayMode.playStop;
+                                                  });
+                                                },
+                                                child: Container(
+                                                  key: Key('Playstop_btn_frame'),
+                                                  height: double.infinity,
+                                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                                                  clipBehavior: Clip.antiAlias,
+                                                  decoration: ShapeDecoration(
+                                                    color: temp.playMode == PlayMode.playStop ? const Color(0xFFB0B0B0) : const Color(0xFFD9D9D9),
+                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                                                  ),
+                                                  child: Column(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    mainAxisAlignment: MainAxisAlignment.end,
+                                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                                    spacing: 17,
+                                                    children: [
+                                                      const Text(
+                                                        'Play/Stop',
+                                                        textAlign: TextAlign.center,
+                                                        style: TextStyle(
+                                                          color: Colors.black,
+                                                          fontSize: 16,
+                                                          fontFamily: 'Inter',
+                                                          fontWeight: FontWeight.w500,
+                                                        ),
                                                       ),
-                                                    ),
-                                                  ],
+                                                    ],
+                                                  ),
                                                 ),
                                               ),
-                                              Container(
-                                                key: Key('Playpause_btn_frame'),
-                                                height: double.infinity,
-                                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                                                clipBehavior: Clip.antiAlias,
-                                                decoration: ShapeDecoration(
-                                                  color: const Color(0xFFD9D9D9),
-                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                                                ),
-                                                child: Column(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  mainAxisAlignment: MainAxisAlignment.end,
-                                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                                  spacing: 17,
-                                                  children: [
-                                                    Text(
-                                                      'Play/Pause',
-                                                      textAlign: TextAlign.center,
-                                                      style: TextStyle(
-                                                        color: Colors.black,
-                                                        fontSize: 16,
-                                                        fontFamily: 'Inter',
-                                                        fontWeight: FontWeight.w500,
+                                              GestureDetector(
+                                                onTap: () {
+                                                  setState(() {
+                                                    temp.playMode = PlayMode.playPause;
+                                                  });
+                                                },
+                                                child: Container(
+                                                  key: Key('Playpause_btn_frame'),
+                                                  height: double.infinity,
+                                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                                                  clipBehavior: Clip.antiAlias,
+                                                  decoration: ShapeDecoration(
+                                                    color: temp.playMode == PlayMode.playPause ? const Color(0xFFB0B0B0) : const Color(0xFFD9D9D9),
+                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                                                  ),
+                                                  child: Column(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    mainAxisAlignment: MainAxisAlignment.end,
+                                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                                    spacing: 17,
+                                                    children: [
+                                                      const Text(
+                                                        'Play/Pause',
+                                                        textAlign: TextAlign.center,
+                                                        style: TextStyle(
+                                                          color: Colors.black,
+                                                          fontSize: 16,
+                                                          fontFamily: 'Inter',
+                                                          fontWeight: FontWeight.w500,
+                                                        ),
                                                       ),
-                                                    ),
-                                                  ],
+                                                    ],
+                                                  ),
                                                 ),
                                               ),
-                                              Container(
-                                                key: Key('Retrigger_btn_frame'),
-                                                height: double.infinity,
-                                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                                                clipBehavior: Clip.antiAlias,
-                                                decoration: ShapeDecoration(
-                                                  color: const Color(0xFFD9D9D9),
-                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                                                ),
-                                                child: Column(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  mainAxisAlignment: MainAxisAlignment.end,
-                                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                                  spacing: 17,
-                                                  children: [
-                                                    Text(
-                                                      'Retrigger',
-                                                      textAlign: TextAlign.center,
-                                                      style: TextStyle(
-                                                        color: Colors.black,
-                                                        fontSize: 16,
-                                                        fontFamily: 'Inter',
-                                                        fontWeight: FontWeight.w500,
+                                              GestureDetector(
+                                                onTap: () {
+                                                  setState(() {
+                                                    temp.playMode = PlayMode.retrigger;
+                                                  });
+                                                },
+                                                child: Container(
+                                                  key: Key('Retrigger_btn_frame'),
+                                                  height: double.infinity,
+                                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                                                  clipBehavior: Clip.antiAlias,
+                                                  decoration: ShapeDecoration(
+                                                    color: temp.playMode == PlayMode.retrigger ? const Color(0xFFB0B0B0) : const Color(0xFFD9D9D9),
+                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                                                  ),
+                                                  child: Column(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    mainAxisAlignment: MainAxisAlignment.end,
+                                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                                    spacing: 17,
+                                                    children: [
+                                                      const Text(
+                                                        'Retrigger',
+                                                        textAlign: TextAlign.center,
+                                                        style: TextStyle(
+                                                          color: Colors.black,
+                                                          fontSize: 16,
+                                                          fontFamily: 'Inter',
+                                                          fontWeight: FontWeight.w500,
+                                                        ),
                                                       ),
-                                                    ),
-                                                  ],
+                                                    ],
+                                                  ),
                                                 ),
                                               ),
                                             ],
@@ -919,6 +968,7 @@ String shortenPath(String fullPath, {int maxLength = 40}) {
                                             children: [
                                               Container(
                                                 key: Key('Start_textedit_frame'),
+                                                width: 100,
                                                 height: double.infinity,
                                                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                                                 clipBehavior: Clip.antiAlias,
@@ -926,27 +976,22 @@ String shortenPath(String fullPath, {int maxLength = 40}) {
                                                   color: const Color(0xFFD9D9D9),
                                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                                                 ),
-                                                child: Row(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                                  spacing: 10,
-                                                  children: [
-                                                    Text(
-                                                      '00:00:00:00',
-                                                      textAlign: TextAlign.center,
-                                                      style: TextStyle(
-                                                        color: Colors.black,
-                                                        fontSize: 20,
-                                                        fontFamily: 'Inter',
-                                                        fontWeight: FontWeight.w500,
-                                                      ),
-                                                    ),
-                                                  ],
+                                                child: TextField(
+                                                  controller: _startController,
+                                                  inputFormatters: [timeFormatter],
+                                                  keyboardType: TextInputType.number,
+                                                  decoration: const InputDecoration(border: InputBorder.none),
+                                                  style: const TextStyle(
+                                                    color: Colors.black,
+                                                    fontSize: 20,
+                                                    fontFamily: 'Inter',
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
                                                 ),
                                               ),
                                               Container(
                                                 key: Key('End_textedit_frame'),
+                                                width: 100,
                                                 height: double.infinity,
                                                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                                                 clipBehavior: Clip.antiAlias,
@@ -954,23 +999,17 @@ String shortenPath(String fullPath, {int maxLength = 40}) {
                                                   color: const Color(0xFFD9D9D9),
                                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                                                 ),
-                                                child: Row(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                                  spacing: 10,
-                                                  children: [
-                                                    Text(
-                                                      '00:15:24:00',
-                                                      textAlign: TextAlign.center,
-                                                      style: TextStyle(
-                                                        color: Colors.black,
-                                                        fontSize: 20,
-                                                        fontFamily: 'Inter',
-                                                        fontWeight: FontWeight.w500,
-                                                      ),
-                                                    ),
-                                                  ],
+                                                child: TextField(
+                                                  controller: _endController,
+                                                  inputFormatters: [timeFormatter],
+                                                  keyboardType: TextInputType.number,
+                                                  decoration: const InputDecoration(border: InputBorder.none),
+                                                  style: const TextStyle(
+                                                    color: Colors.black,
+                                                    fontSize: 20,
+                                                    fontFamily: 'Inter',
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
                                                 ),
                                               ),
                                               Container(
@@ -1001,32 +1040,43 @@ String shortenPath(String fullPath, {int maxLength = 40}) {
                                                   ],
                                                 ),
                                               ),
-                                              Container(
-                                                key: Key('Reset_btn_frame'),
-                                                height: double.infinity,
-                                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-                                                clipBehavior: Clip.antiAlias,
-                                                decoration: ShapeDecoration(
-                                                  color: const Color(0xFFD9D9D9),
-                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                                                ),
-                                                child: Row(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                                  spacing: 10,
-                                                  children: [
-                                                    Text(
-                                                      'Reset',
-                                                      textAlign: TextAlign.center,
-                                                      style: TextStyle(
-                                                        color: Colors.black,
-                                                        fontSize: 20,
-                                                        fontFamily: 'Inter',
-                                                        fontWeight: FontWeight.w500,
+                                              GestureDetector(
+                                                onTap: () {
+                                                  final duration = temp.player.duration ?? Duration.zero;
+                                                  setState(() {
+                                                    temp.startTime = Duration.zero;
+                                                    temp.stopTime = duration;
+                                                    _startController.text = formatDuration(temp.startTime);
+                                                    _endController.text = formatDuration(temp.stopTime);
+                                                  });
+                                                },
+                                                child: Container(
+                                                  key: Key('Reset_btn_frame'),
+                                                  height: double.infinity,
+                                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                                                  clipBehavior: Clip.antiAlias,
+                                                  decoration: ShapeDecoration(
+                                                    color: const Color(0xFFD9D9D9),
+                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                                                  ),
+                                                  child: Row(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    mainAxisAlignment: MainAxisAlignment.center,
+                                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                                    spacing: 10,
+                                                    children: const [
+                                                      Text(
+                                                        'Reset',
+                                                        textAlign: TextAlign.center,
+                                                        style: TextStyle(
+                                                          color: Colors.black,
+                                                          fontSize: 20,
+                                                          fontFamily: 'Inter',
+                                                          fontWeight: FontWeight.w500,
+                                                        ),
                                                       ),
-                                                    ),
-                                                  ],
+                                                    ],
+                                                  ),
                                                 ),
                                               ),
                                             ],
@@ -1057,6 +1107,8 @@ String shortenPath(String fullPath, {int maxLength = 40}) {
                           children: [
                             GestureDetector(
                               onTap: () {
+                                temp.startTime = parseDuration(_startController.text);
+                                temp.stopTime = parseDuration(_endController.text);
                                 context.read<ChannelBankModel>().updateChannel(widget.index, temp);
                                 Navigator.of(context).pop();
                               },
