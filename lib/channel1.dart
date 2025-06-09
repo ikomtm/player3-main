@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:player3/settings.dart';
 import 'package:provider/provider.dart';
+
 import 'models/channel_bank_model.dart';
 import 'models/channel_strip_model.dart';
 import 'package:just_audio/just_audio.dart';
@@ -13,6 +14,11 @@ String formatDuration(Duration d) {
   final s = twoDigits(d.inSeconds.remainder(60));
   return '$h:$m:$s';
 }
+
+import 'channel_model.dart';
+import 'models/channel_bank_model.dart';
+import 'models/channel_strip_model.dart';
+
 
 
 class Channel1 extends StatelessWidget {
@@ -233,6 +239,7 @@ class Channel1 extends StatelessWidget {
               final player = channel.player;
               if (channel.filePath.isEmpty) return;
 
+
               Future<void> loadSource() async {
                 await player.setAudioSource(
                   ClippingAudioSource(
@@ -243,16 +250,24 @@ class Channel1 extends StatelessWidget {
                 );
               }
 
+
               switch (channel.playMode) {
                 case PlayMode.playStop:
                   if (player.playing) {
                     await player.stop();
+
                     await player.seek(channel.startTime);
                   } else {
                     if (player.audioSource == null) {
                       await loadSource();
                     } else {
                       await player.seek(channel.startTime);
+
+                    await player.seek(Duration.zero);
+                  } else {
+                    if (player.audioSource == null) {
+                      await player.setFilePath(channel.filePath);
+
                     }
                     await player.play();
                   }
@@ -262,15 +277,24 @@ class Channel1 extends StatelessWidget {
                     await player.pause();
                   } else {
                     if (player.audioSource == null) {
+
                       await loadSource();
                     }
                     await player.seek(channel.startTime);
+
+                      await player.setFilePath(channel.filePath);
+                    }
+
                     await player.play();
                   }
                   break;
                 case PlayMode.retrigger:
                   await player.stop();
+
                   await loadSource();
+
+                  await player.setFilePath(channel.filePath);
+
                   await player.play();
                   break;
               }
