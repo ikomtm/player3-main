@@ -4,6 +4,7 @@ import 'package:player3/settings.dart';
 import 'package:provider/provider.dart';
 import 'channel_model.dart';
 import 'models/channel_bank_model.dart';
+import 'models/channel_strip_model.dart';
 
 
 class Channel1 extends StatelessWidget {

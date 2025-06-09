@@ -954,7 +954,7 @@ String shortenPath(String fullPath, {int maxLength = 40}) {
                                                   spacing: 10,
                                                   children: [
                                                     Text(
-                                                      '00:00:00:00',
+                                                      '00:00:00',
                                                       textAlign: TextAlign.center,
                                                       style: TextStyle(
                                                         color: Colors.black,
@@ -982,7 +982,7 @@ String shortenPath(String fullPath, {int maxLength = 40}) {
                                                   spacing: 10,
                                                   children: [
                                                     Text(
-                                                      '00:15:24:00',
+                                                      '00:15:24',
                                                       textAlign: TextAlign.center,
                                                       style: TextStyle(
                                                         color: Colors.black,
