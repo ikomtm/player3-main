@@ -218,42 +218,76 @@ class Channel1 extends StatelessWidget {
               ],
             ),
           ),
-          Container(
-            key: Key('knob_frame'),
-            width: double.infinity,
-            height: 124,
-            clipBehavior: Clip.antiAlias,
-            decoration: const BoxDecoration(),            
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Container(                  
-                  key: Key('knob'),
-                  width: 120,
-                  height: 120,
-                  decoration: ShapeDecoration(
-                    color: const Color(0xFFCBCBCB),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(17),
+          GestureDetector(
+            onTap: () async {
+              final channel = context.read<ChannelBankModel>().channels[index];
+              final player = channel.player;
+              if (channel.filePath.isEmpty) return;
+              switch (channel.playMode) {
+                case PlayMode.playStop:
+                  if (player.playing) {
+                    await player.stop();
+                    await player.seek(Duration.zero);
+                  } else {
+                    if (player.audioSource == null) {
+                      await player.setFilePath(channel.filePath);
+                    }
+                    await player.play();
+                  }
+                  break;
+                case PlayMode.playPause:
+                  if (player.playing) {
+                    await player.pause();
+                  } else {
+                    if (player.audioSource == null) {
+                      await player.setFilePath(channel.filePath);
+                    }
+                    await player.play();
+                  }
+                  break;
+                case PlayMode.retrigger:
+                  await player.stop();
+                  await player.setFilePath(channel.filePath);
+                  await player.play();
+                  break;
+              }
+            },
+            child: Container(
+              key: const Key('knob_frame'),
+              width: double.infinity,
+              height: 124,
+              clipBehavior: Clip.antiAlias,
+              decoration: const BoxDecoration(),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    key: const Key('knob'),
+                    width: 120,
+                    height: 120,
+                    decoration: ShapeDecoration(
+                      color: const Color(0xFFCBCBCB),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(17),
+                      ),
                     ),
                   ),
-                ),
-                
-                Container(
-                  key: Key('knob_label'),
-                  alignment: Alignment.center,
-                  child: Text(
-                    '1',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 36,
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w400,
+                  Container(
+                    key: const Key('knob_label'),
+                    alignment: Alignment.center,
+                    child: const Text(
+                      '1',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 36,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w400,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],

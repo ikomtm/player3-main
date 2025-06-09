@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:just_audio/just_audio.dart';
 
 enum PlayMode {
   playStop,
@@ -14,6 +15,7 @@ class ChannelStripModel {
   Duration startTime;
   Duration stopTime;
   PlayMode playMode;
+  final AudioPlayer player;
 
   ChannelStripModel({
     required this.name,
@@ -23,7 +25,8 @@ class ChannelStripModel {
     required this.startTime,
     required this.stopTime,
     required this.playMode,
-  });
+    AudioPlayer? player,
+  }) : player = player ?? AudioPlayer();
 
   ChannelStripModel copy() {
     return ChannelStripModel(
@@ -34,6 +37,7 @@ class ChannelStripModel {
       startTime: startTime,
       stopTime: stopTime,
       playMode: playMode,
+      player: player,
     );
   }
 }
