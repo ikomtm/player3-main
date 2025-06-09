@@ -15,11 +15,18 @@ String formatDuration(Duration d) {
   return '$h:$m:$s';
 }
 
-import 'channel_model.dart';
+
 import 'models/channel_bank_model.dart';
 import 'models/channel_strip_model.dart';
+import 'package:just_audio/just_audio.dart';
 
-
+String formatDuration(Duration d) {
+  String twoDigits(int n) => n.toString().padLeft(2, '0');
+  final h = twoDigits(d.inHours);
+  final m = twoDigits(d.inMinutes.remainder(60));
+  final s = twoDigits(d.inSeconds.remainder(60));
+  return '$h:$m:$s';
+}
 
 class Channel1 extends StatelessWidget {
   final int index;
@@ -205,7 +212,7 @@ class Channel1 extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 1),
             clipBehavior: Clip.antiAlias,
             decoration: const BoxDecoration(),
-            child: const Column(
+            child: Column(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -238,8 +245,6 @@ class Channel1 extends StatelessWidget {
               final channel = context.read<ChannelBankModel>().channels[index];
               final player = channel.player;
               if (channel.filePath.isEmpty) return;
-
-
               Future<void> loadSource() async {
                 await player.setAudioSource(
                   ClippingAudioSource(
@@ -249,12 +254,15 @@ class Channel1 extends StatelessWidget {
                   ),
                 );
               }
-
-
               switch (channel.playMode) {
                 case PlayMode.playStop:
                   if (player.playing) {
                     await player.stop();
+
+                    await player.seek(channel.startTime);
+                  } else {
+                    await loadSource();
+                    await player.seek(channel.startTime);
 
                     await player.seek(channel.startTime);
                   } else {
@@ -269,6 +277,7 @@ class Channel1 extends StatelessWidget {
                       await player.setFilePath(channel.filePath);
 
                     }
+
                     await player.play();
                   }
                   break;
@@ -276,6 +285,9 @@ class Channel1 extends StatelessWidget {
                   if (player.playing) {
                     await player.pause();
                   } else {
+
+                    await loadSource();
+                    await player.seek(channel.startTime);
                     if (player.audioSource == null) {
 
                       await loadSource();
@@ -293,7 +305,11 @@ class Channel1 extends StatelessWidget {
 
                   await loadSource();
 
+
+                  await loadSource();
+
                   await player.setFilePath(channel.filePath);
+
 
                   await player.play();
                   break;

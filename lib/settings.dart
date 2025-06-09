@@ -71,7 +71,6 @@ Duration parseDuration(String text) {
     super.dispose();
   }
 
-  @override
   Widget buildColorButton(String label, Color color) {
   final isSelected = temp.color == color;
 
@@ -990,6 +989,7 @@ Duration parseDuration(String text) {
                                                     fontWeight: FontWeight.w500,
                                                   ),
 
+
                                                 child: Row(
                                                   mainAxisSize: MainAxisSize.min,
                                                   mainAxisAlignment: MainAxisAlignment.center,
@@ -1007,6 +1007,7 @@ Duration parseDuration(String text) {
                                                       ),
                                                     ),
                                                   ],
+
 
                                                 ),
                                               ),
@@ -1033,6 +1034,7 @@ Duration parseDuration(String text) {
                                                     fontWeight: FontWeight.w500,
                                                   ),
 
+
                                                 child: Row(
                                                   mainAxisSize: MainAxisSize.min,
                                                   mainAxisAlignment: MainAxisAlignment.center,
@@ -1050,6 +1052,7 @@ Duration parseDuration(String text) {
                                                       ),
                                                     ),
                                                   ],
+
 
                                                 ),
                                               ),
@@ -1150,6 +1153,9 @@ Duration parseDuration(String text) {
                               onTap: () {
                                 temp.startTime = parseDuration(_startController.text);
                                 temp.stopTime = parseDuration(_endController.text);
+
+                                temp.player.stop();
+
                                 context.read<ChannelBankModel>().updateChannel(widget.index, temp);
                                 Navigator.of(context).pop();
                               },
