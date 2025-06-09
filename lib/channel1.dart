@@ -249,11 +249,8 @@ class Channel1 extends StatelessWidget {
                     await player.stop();
                     await player.seek(channel.startTime);
                   } else {
-                    if (player.audioSource == null) {
-                      await loadSource();
-                    } else {
-                      await player.seek(channel.startTime);
-                    }
+                    await loadSource();
+                    await player.seek(channel.startTime);
                     await player.play();
                   }
                   break;
@@ -261,9 +258,7 @@ class Channel1 extends StatelessWidget {
                   if (player.playing) {
                     await player.pause();
                   } else {
-                    if (player.audioSource == null) {
-                      await loadSource();
-                    }
+                    await loadSource();
                     await player.seek(channel.startTime);
                     await player.play();
                   }

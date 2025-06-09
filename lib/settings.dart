@@ -1109,6 +1109,7 @@ Duration parseDuration(String text) {
                               onTap: () {
                                 temp.startTime = parseDuration(_startController.text);
                                 temp.stopTime = parseDuration(_endController.text);
+                                temp.player.stop();
                                 context.read<ChannelBankModel>().updateChannel(widget.index, temp);
                                 Navigator.of(context).pop();
                               },
