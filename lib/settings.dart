@@ -71,7 +71,6 @@ Duration parseDuration(String text) {
     super.dispose();
   }
 
-  @override
   Widget buildColorButton(String label, Color color) {
   final isSelected = temp.color == color;
 

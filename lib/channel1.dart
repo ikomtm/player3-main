@@ -174,7 +174,7 @@ class Channel1 extends StatelessWidget {
                     ),
                   ),
                   SizedBox(
-                    key: Key('Fader_value_frame'),
+            child: Column(
                     width: double.infinity,
                     child: const Column(
                       mainAxisSize: MainAxisSize.min,
