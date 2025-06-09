@@ -1147,9 +1147,11 @@ Duration parseDuration(String text) {
                           spacing: 17,
                           children: [
                             GestureDetector(
-                              onTap: () {
+                              onTap: () async {
                                 temp.startTime = parseDuration(_startController.text);
                                 temp.stopTime = parseDuration(_endController.text);
+                                await temp.player.stop();
+                                await temp.player.clearAudioSources();
                                 context.read<ChannelBankModel>().updateChannel(widget.index, temp);
                                 Navigator.of(context).pop();
                               },
