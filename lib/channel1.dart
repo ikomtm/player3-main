@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:player3/settings.dart';
 import 'package:provider/provider.dart';
 import 'channel_model.dart';
-import 'package:provider/provider.dart';
 import 'models/channel_bank_model.dart';
 
 
@@ -15,11 +14,11 @@ class Channel1 extends StatelessWidget {
   Widget build(BuildContext context) {
     final channel = context.watch<ChannelBankModel>().channels[index];
     return Container(
-      key: Key('Channel1_\$id'),
+      key: Key('Channel1_\$index'),
       width: double.infinity,
       padding: const EdgeInsets.all(4),
       decoration: ShapeDecoration(
-        color: context.watch<ChannelBankModel>().channels[index].color,
+        color: channel.color,
 
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
@@ -44,7 +43,7 @@ class Channel1 extends StatelessWidget {
               children: [
                 Text(
                   key: const Key('Name_label'),
-                  context.watch<ChannelBankModel>().channels[index].name,
+                  channel.name,
                   style: const TextStyle(
                     color: Colors.black,
                     fontSize: 16,
