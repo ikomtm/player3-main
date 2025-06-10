@@ -230,50 +230,9 @@ class Channel1 extends StatelessWidget {
           
           InkWell(
             onTap: () async {
-              final channel = context.read<ChannelBankModel>().channels[index];
-              final player = channel.player;
-
+              final channel = context.read<ChannelBankModel>().channels[index];             
               if (channel.filePath.isEmpty) return;
-
-              Future<void> loadSource() async {
-                await player.setAudioSource(
-                  ClippingAudioSource(
-                    start: channel.startTime,
-                    end: channel.stopTime,
-                    child: AudioSource.file(channel.filePath),
-                  ),
-                );
-              }
-
-              switch (channel.playMode) {
-                case PlayMode.playStop:
-                  if (player.playing) {
-                    await player.stop();
-                    await player.seek(channel.startTime);
-                  } else {
-                    await loadSource();
-                    await player.play();
-                  }
-                  break;
-
-                case PlayMode.playPause:
-                  if (player.playing) {
-                    await player.pause();
-                  } else {
-                    if (player.audioSource == null) {
-                      await loadSource();
-                      await player.seek(channel.startTime);
-                    }
-                    await player.play();
-                  }
-                  break;
-
-                case PlayMode.retrigger:
-                  await player.stop();
-                  await loadSource();
-                  await player.play();
-                  break;
-              }
+              await channel.controller.toggle(); // вызов логики из контроллера              
             },
           
           borderRadius: BorderRadius.circular(17),

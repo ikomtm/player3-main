@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:player3/ChannelAudioController.dart';
+
+
 
 enum PlayMode {
   playStop,
@@ -8,6 +11,7 @@ enum PlayMode {
 }
 
 class ChannelStripModel {
+  
   String name;
   Color color;
   String filePath;
@@ -15,7 +19,9 @@ class ChannelStripModel {
   Duration startTime;
   Duration stopTime;
   PlayMode playMode;
-  final AudioPlayer player;
+  double fadeInSeconds;
+  double fadeOutSeconds;
+  late final ChannelAudioController controller;
 
   ChannelStripModel({
     required this.name,
@@ -25,8 +31,11 @@ class ChannelStripModel {
     required this.startTime,
     required this.stopTime,
     required this.playMode,
-    AudioPlayer? player,
-  }) : player = player ?? AudioPlayer();
+    this.fadeInSeconds = 0,
+    this.fadeOutSeconds = 0,    
+ }) {
+    controller = ChannelAudioController(this);
+  }
 
   ChannelStripModel copy() {
     return ChannelStripModel(
@@ -37,7 +46,8 @@ class ChannelStripModel {
       startTime: startTime,
       stopTime: stopTime,
       playMode: playMode,
-      player: player,
+      fadeInSeconds: fadeInSeconds,
+      fadeOutSeconds: fadeOutSeconds,      
     );
   }
 }

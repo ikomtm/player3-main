@@ -4,6 +4,8 @@ import 'models/channel_strip_model.dart';
 import 'models/channel_bank_model.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
+import 'WaveformEditorDialog.dart';
+import 'ChannelAudioController.dart';
 
 class SettingsWindow extends StatefulWidget {
   final int index;
@@ -18,6 +20,8 @@ class _SettingsWindowState extends State<SettingsWindow> {
   late TextEditingController _nameController;
   late TextEditingController _startController;
   late TextEditingController _endController;
+  late TextEditingController _fadeInController;
+  late TextEditingController _fadeOutController;
   final timeFormatter = MaskTextInputFormatter(mask: '##:##:##', filter: {'#': RegExp(r'[0-9]')});
   final Map<String, Color> colorOptions = {
   'None': Colors.grey,
@@ -61,6 +65,8 @@ Duration parseDuration(String text) {
     _nameController = TextEditingController(text: temp.name);
     _startController = TextEditingController(text: formatDuration(temp.startTime));
     _endController = TextEditingController(text: formatDuration(temp.stopTime));
+    _fadeInController = TextEditingController(text: temp.fadeInSeconds.toStringAsFixed(0));
+    _fadeOutController = TextEditingController(text: temp.fadeOutSeconds.toStringAsFixed(0));
   }
 
   @override
@@ -68,6 +74,8 @@ Duration parseDuration(String text) {
     _nameController.dispose();
     _startController.dispose();
     _endController.dispose();
+    _fadeInController.dispose();
+    _fadeOutController.dispose();
     super.dispose();
   }
 
@@ -539,7 +547,7 @@ Duration parseDuration(String text) {
 
                                                   if (result != null && result.files.single.path != null) {
                                                     temp.filePath = result.files.single.path!;
-                                                    Duration? d = await temp.player.setFilePath(temp.filePath);
+                                                    Duration? d = await temp.controller.player.setFilePath(temp.filePath);
                                                     setState(() {
                                                       temp.startTime = Duration.zero;
                                                       temp.stopTime = d ?? Duration.zero;
@@ -776,101 +784,34 @@ Duration parseDuration(String text) {
                                           ),
                                         ),
                                       ),
-                                      Expanded(
-                                        key: Key('Fade_In_frame'),
-                                        // left: 10,
-                                        // top: 284.44,
-                                        child: Container(
-                                          width: double.infinity,
-                                          height: double.infinity,
-                                          padding: const EdgeInsets.all(4),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            mainAxisAlignment: MainAxisAlignment.start,
-                                            crossAxisAlignment: CrossAxisAlignment.center,
-                                            spacing: 10,
-                                            children: [
-                                              Container(
-                                                key: Key('Fade_In_textedit_frame'),
-                                                width: 50,
-                                                height: double.infinity,
-                                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                                clipBehavior: Clip.antiAlias,
-                                                decoration: ShapeDecoration(
-                                                  color: const Color(0xFFD9D9D9),
-                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                                                ),
-                                                child: Row(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                                  spacing: 10,
-                                                  children: [
-                                                    Text(
-                                                      '0',
-                                                      textAlign: TextAlign.center,
-                                                      style: TextStyle(
-                                                        color: Colors.black,
-                                                        fontSize: 14,
-                                                        fontFamily: 'Inter',
-                                                        fontWeight: FontWeight.w500,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
+                                      Row(
+                                        children: [
+                                          SizedBox(
+                                            width: 80,
+                                            child: TextField(
+                                              key: const Key('Fade_In_frame'),
+                                              keyboardType: TextInputType.number,
+                                              decoration: const InputDecoration(labelText: 'Fade In (s)'),
+                                              controller: _fadeInController,
+                                              onChanged: (value) {
+                                                temp.fadeInSeconds = double.tryParse(value) ?? 0;
+                                              },
+                                            ),
                                           ),
-                                        ),
-                                      ),
-                                      Expanded(
-                                        key: Key('Fade_Out_frame'),
-                                        // left: 10,
-                                        // top: 339.33,
-                                        child: Container(
-                                          width: double.infinity,
-                                          height: double.infinity,
-                                          padding: const EdgeInsets.all(4),
-                                          clipBehavior: Clip.antiAlias,
-                                          decoration: BoxDecoration(),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            mainAxisAlignment: MainAxisAlignment.start,
-                                            crossAxisAlignment: CrossAxisAlignment.center,
-                                            spacing: 10,
-                                            children: [
-                                              Container(
-                                                key: Key('Fade_Out_textedit_frame'),
-                                                width: 50,
-                                                height: double.infinity,
-                                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                                clipBehavior: Clip.antiAlias,
-                                                decoration: ShapeDecoration(
-                                                  color: const Color(0xFFD9D9D9),
-                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                                                ),
-                                                child: Row(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                                  spacing: 10,
-                                                  children: [
-                                                    Text(
-                                                      '0',
-                                                      textAlign: TextAlign.center,
-                                                      style: TextStyle(
-                                                        color: Colors.black,
-                                                        fontSize: 14,
-                                                        fontFamily: 'Inter',
-                                                        fontWeight: FontWeight.w500,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
+                                          const SizedBox(width: 16),
+                                          SizedBox(
+                                            width: 80,
+                                            child: TextField(
+                                              key: const Key('Fade_Out_frame'),
+                                              keyboardType: TextInputType.number,
+                                              decoration: const InputDecoration(labelText: 'Fade Out (s)'),
+                                              controller: _fadeOutController,
+                                              onChanged: (value) {
+                                                temp.fadeOutSeconds = double.tryParse(value) ?? 0;
+                                              },
+                                            ),
                                           ),
-                                        ),
+                                        ],
                                       ),
                                       Expanded(
                                         key: Key('Playback_Mode_frame'),
@@ -1014,37 +955,53 @@ Duration parseDuration(String text) {
                                                   ),
                                                 ),
                                               ),
-                                              Container(
-                                                key: Key('Edit_btn_frame'),
-                                                height: double.infinity,
-                                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-                                                clipBehavior: Clip.antiAlias,
-                                                decoration: ShapeDecoration(
-                                                  color: const Color(0xFFD9D9D9),
-                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                                                ),
-                                                child: Row(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                                  spacing: 10,
-                                                  children: [
-                                                    Text(
-                                                      'Edit...',
-                                                      textAlign: TextAlign.center,
-                                                      style: TextStyle(
-                                                        color: Colors.black,
-                                                        fontSize: 20,
-                                                        fontFamily: 'Inter',
-                                                        fontWeight: FontWeight.w500,
+                                              GestureDetector(
+                                                onTap: () {
+                                                  showDialog(
+                                                    context: context,
+                                                    builder: (_) => WaveformEditorDialog(channel: temp),
+                                                  );
+                                                },
+                                                child: Container(
+                                                  key: const Key('Edit_btn_frame'),
+                                                  height: double.infinity,
+                                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                                                  clipBehavior: Clip.antiAlias,
+                                                  decoration: ShapeDecoration(
+                                                    color: const Color(0xFFD9D9D9),
+                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                                                  ),
+                                                  child: const Row(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    mainAxisAlignment: MainAxisAlignment.center,
+                                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                                    children: [
+                                                      Text(
+                                                        'Edit...',
+                                                        textAlign: TextAlign.center,
+                                                        style: TextStyle(
+                                                          color: Colors.black,
+                                                          fontSize: 20,
+                                                          fontFamily: 'Inter',
+                                                          fontWeight: FontWeight.w500,
+                                                        ),
                                                       ),
-                                                    ),
-                                                  ],
+                                                    ],
+                                                  ),
                                                 ),
                                               ),
                                               GestureDetector(
-                                                onTap: () {
-                                                  final duration = temp.player.duration ?? Duration.zero;
+                                                onTap: () async {
+                                                  final player = temp.controller.player;
+
+                                                  // Устанавливаем файл напрямую — это вернёт duration
+                                                  Duration? duration = await player.setFilePath(temp.filePath);
+
+                                                  if (duration == null) {
+                                                    debugPrint("Ошибка: не удалось измерить длительность файла");
+                                                    return;
+                                                  }
+
                                                   setState(() {
                                                     temp.startTime = Duration.zero;
                                                     temp.stopTime = duration;
@@ -1112,7 +1069,7 @@ Duration parseDuration(String text) {
                                 temp.startTime = parseDuration(_startController.text);
                                 temp.stopTime = parseDuration(_endController.text);
 
-                                temp.player.stop();
+                                temp.controller.player.stop();
 
                                 context.read<ChannelBankModel>().updateChannel(widget.index, temp);
                                 Navigator.of(context).pop();
