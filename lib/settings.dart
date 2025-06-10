@@ -988,27 +988,6 @@ Duration parseDuration(String text) {
                                                     fontFamily: 'Inter',
                                                     fontWeight: FontWeight.w500,
                                                   ),
-
-
-                                                child: Row(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                                  spacing: 10,
-                                                  children: [
-                                                    Text(
-                                                      '00:00:00',
-                                                      textAlign: TextAlign.center,
-                                                      style: TextStyle(
-                                                        color: Colors.black,
-                                                        fontSize: 20,
-                                                        fontFamily: 'Inter',
-                                                        fontWeight: FontWeight.w500,
-                                                      ),
-                                                    ),
-                                                  ],
-
-
                                                 ),
                                               ),
                                               Container(
@@ -1033,27 +1012,6 @@ Duration parseDuration(String text) {
                                                     fontFamily: 'Inter',
                                                     fontWeight: FontWeight.w500,
                                                   ),
-
-
-                                                child: Row(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                                  spacing: 10,
-                                                  children: [
-                                                    Text(
-                                                      '00:15:24',
-                                                      textAlign: TextAlign.center,
-                                                      style: TextStyle(
-                                                        color: Colors.black,
-                                                        fontSize: 20,
-                                                        fontFamily: 'Inter',
-                                                        fontWeight: FontWeight.w500,
-                                                      ),
-                                                    ),
-                                                  ],
-
-
                                                 ),
                                               ),
                                               Container(
