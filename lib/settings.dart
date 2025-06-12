@@ -6,6 +6,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'WaveformEditorDialog.dart';
 import 'ChannelAudioController.dart';
+import 'package:flutter_spinbox/flutter_spinbox.dart';
 
 class SettingsWindow extends StatefulWidget {
   final int index;
@@ -708,8 +709,7 @@ Duration parseDuration(String text) {
                                       ),
                                       Expanded(
                                         key: Key('Loop_frame'),
-                                        // left: 10,
-                                        // top: 229.56,
+                                        
                                         child: Container(
                                           width: double.infinity,
                                           height: double.infinity,
@@ -784,35 +784,189 @@ Duration parseDuration(String text) {
                                           ),
                                         ),
                                       ),
-                                      Row(
-                                        children: [
-                                          SizedBox(
-                                            width: 80,
-                                            child: TextField(
-                                              key: const Key('Fade_In_frame'),
-                                              keyboardType: TextInputType.number,
-                                              decoration: const InputDecoration(labelText: 'Fade In (s)'),
-                                              controller: _fadeInController,
-                                              onChanged: (value) {
-                                                temp.fadeInSeconds = double.tryParse(value) ?? 0;
-                                              },
+                                     
+                                    // Fade In
+                                    Expanded(
+                                      child: Align(alignment: Alignment.centerLeft,
+                                      child: IntrinsicWidth(
+                                      child: Container(
+                                        height: double.infinity,
+                                        key: const Key('Fade_In_row'),
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFD9D9D9),
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                        child: Row(
+                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          children: [
+                                            // Поле
+                                            SizedBox(
+                                              
+                                              width: 50,
+                                              height: 36,
+                                              child: TextField(
+                                                key: const Key('Fade_In_frame'),
+                                                controller: _fadeInController,
+                                                keyboardType: TextInputType.number,
+                                                textAlign: TextAlign.center,
+                                                style: const TextStyle(fontSize: 16, color: Colors.black),
+                                                decoration: const InputDecoration(
+                                                  
+                                                  border: OutlineInputBorder(),
+                                                  isDense: true,
+                                                  contentPadding: EdgeInsets.symmetric(vertical: 8),
+                                                ),
+                                                onChanged: (value) {
+                                                  temp.fadeInSeconds = double.tryParse(value) ?? 0;
+                                                },
+                                              ),
                                             ),
-                                          ),
-                                          const SizedBox(width: 16),
-                                          SizedBox(
-                                            width: 80,
-                                            child: TextField(
-                                              key: const Key('Fade_Out_frame'),
-                                              keyboardType: TextInputType.number,
-                                              decoration: const InputDecoration(labelText: 'Fade Out (s)'),
-                                              controller: _fadeOutController,
-                                              onChanged: (value) {
-                                                temp.fadeOutSeconds = double.tryParse(value) ?? 0;
-                                              },
+                                            const SizedBox(width: 6),
+
+                                            // Кнопка <
+                                            SizedBox(
+                                              width: 32,
+                                              height: 36,
+                                              child: ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: Colors.white,
+                                                  foregroundColor: Colors.black,
+                                                  padding: EdgeInsets.zero,
+                                                ),
+                                                onPressed: () {
+                                                  final current = double.tryParse(_fadeInController.text) ?? 0;
+                                                  final newValue = (current - 1).clamp(0, 60).toDouble();
+                                                  _fadeInController.text = newValue.toInt().toString();
+                                                  temp.fadeInSeconds = newValue;
+                                                },
+                                                child: const Icon(Icons.chevron_left),
+                                              ),
                                             ),
-                                          ),
-                                        ],
+                                            const SizedBox(width: 4),
+
+                                            // Кнопка >
+                                            SizedBox(
+                                              width: 32,
+                                              height: 36,
+                                              child: ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: Colors.white,
+                                                  foregroundColor: Colors.black,
+                                                  padding: EdgeInsets.zero,
+                                                ),
+                                                onPressed: () {
+                                                  final current = double.tryParse(_fadeInController.text) ?? 0;
+                                                  final newValue = (current + 1).clamp(0, 60).toDouble();
+                                                  _fadeInController.text = newValue.toInt().toString();
+                                                  temp.fadeInSeconds = newValue;
+                                                },
+                                                child: const Icon(Icons.chevron_right),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+
+                                            const Text(
+                                              'seconds (0 – off, 60 – max)',
+                                              style: TextStyle(fontSize: 13, color: Colors.black),
+                                            ),
+                                          ],
+                                        ),
                                       ),
+                                    ),
+                                      ),
+                                    ),
+
+                                    // Fade Out
+                                    Expanded(
+                                      child: Align(alignment: Alignment.centerLeft,
+                                      child: IntrinsicWidth(
+                                      child: Container(
+                                        height: double.infinity,
+                                        key: const Key('Fade_Out_row'),
+                                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFD9D9D9),
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                        child: Row(
+                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          children: [
+                                            // Поле
+                                            SizedBox(
+                                              width: 50,
+                                              height: 36,
+                                              child: TextField(
+                                                key: const Key('Fade_Out_frame'),
+                                                controller: _fadeOutController,
+                                                keyboardType: TextInputType.number,
+                                                textAlign: TextAlign.center,
+                                                style: const TextStyle(fontSize: 16, color: Colors.black),
+                                                decoration: const InputDecoration(
+                                                  border: OutlineInputBorder(),
+                                                  isDense: true,
+                                                  contentPadding: EdgeInsets.symmetric(vertical: 8),
+                                                ),
+                                                onChanged: (value) {
+                                                  temp.fadeOutSeconds = double.tryParse(value) ?? 0;
+                                                },
+                                              ),
+                                            ),
+                                            const SizedBox(width: 6),
+
+                                            // Кнопка <
+                                            SizedBox(
+                                              width: 32,
+                                              height: 36,
+                                              child: ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: Colors.white,
+                                                  foregroundColor: Colors.black,
+                                                  padding: EdgeInsets.zero,
+                                                ),
+                                                onPressed: () {
+                                                  final current = double.tryParse(_fadeOutController.text) ?? 0;
+                                                  final newValue = (current - 1).clamp(0, 60).toDouble();
+                                                  _fadeOutController.text = newValue.toInt().toString();
+                                                  temp.fadeOutSeconds = newValue;
+                                                },
+                                                child: const Icon(Icons.chevron_left),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 4),
+
+                                            // Кнопка >
+                                            SizedBox(
+                                              width: 32,
+                                              height: 36,
+                                              child: ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: Colors.white,
+                                                  foregroundColor: Colors.black,
+                                                  padding: EdgeInsets.zero,
+                                                ),
+                                                onPressed: () {
+                                                  final current = double.tryParse(_fadeOutController.text) ?? 0;
+                                                  final newValue = (current + 1).clamp(0, 60).toDouble();
+                                                  _fadeOutController.text = newValue.toInt().toString();
+                                                  temp.fadeOutSeconds = newValue;
+                                                },
+                                                child: const Icon(Icons.chevron_right),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+
+                                            const Text(
+                                              'seconds (0 – off, 60 – max)',
+                                              style: TextStyle(fontSize: 13, color: Colors.black),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                      ),
+                                    ),
+
                                       Expanded(
                                         key: Key('Playback_Mode_frame'),
                                         // left: 10,

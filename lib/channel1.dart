@@ -204,15 +204,24 @@ class Channel1 extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
-                  key: const Key('Start_timecode'),
-                  formatDuration(channel.startTime),
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontSize: 16,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w400,
+                StreamBuilder<Duration>(
+                  stream: channel.controller.player.createPositionStream(
+                    minPeriod: const Duration(milliseconds: 100),
                   ),
+                  builder: (context, snapshot) {
+                    final position = snapshot.data ?? Duration.zero;
+                    final effectiveTime = position;
+                    return Text(
+                      formatDuration(effectiveTime),
+                      key: const Key('Start_timecode'),
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w400,
+                      ),
+                    );
+                  },
                 ),
                 Text(
                   key: const Key('Stop_timecode'),
