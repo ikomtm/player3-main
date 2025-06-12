@@ -818,7 +818,12 @@ Duration parseDuration(String text) {
                                                   contentPadding: EdgeInsets.symmetric(vertical: 8),
                                                 ),
                                                 onChanged: (value) {
-                                                  temp.fadeInSeconds = double.tryParse(value) ?? 0;
+                                                  final newValue = double.tryParse(value) ?? 0;
+                                                  temp.fadeInSeconds = newValue;
+
+                                                  // Cancel active fades and set volume for preview
+                                                  temp.controller.cancelFadeTimers();
+                                                  temp.controller.player.setVolume(newValue > 0 ? 0.0 : 1.0);
                                                 },
                                               ),
                                             ),
@@ -839,6 +844,8 @@ Duration parseDuration(String text) {
                                                   final newValue = (current - 1).clamp(0, 60).toDouble();
                                                   _fadeInController.text = newValue.toInt().toString();
                                                   temp.fadeInSeconds = newValue;
+                                                  temp.controller.cancelFadeTimers();
+                                                  temp.controller.player.setVolume(newValue > 0 ? 0.0 : 1.0);
                                                 },
                                                 child: const Icon(Icons.chevron_left),
                                               ),
@@ -860,6 +867,8 @@ Duration parseDuration(String text) {
                                                   final newValue = (current + 1).clamp(0, 60).toDouble();
                                                   _fadeInController.text = newValue.toInt().toString();
                                                   temp.fadeInSeconds = newValue;
+                                                  temp.controller.cancelFadeTimers();
+                                                  temp.controller.player.setVolume(newValue > 0 ? 0.0 : 1.0);
                                                 },
                                                 child: const Icon(Icons.chevron_right),
                                               ),
