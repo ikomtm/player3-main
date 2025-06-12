@@ -243,7 +243,7 @@ class Channel1 extends StatelessWidget {
               debugPrint('[Channel ${channel.name}] === Button Pressed ===');           
               if (channel.filePath.isEmpty) return;
               
-              await channel.controller.toggle(); // вызов логики из контроллера              
+              await channel.controller.toggle(); // вызов логики из контроллера               
             },
           
           borderRadius: BorderRadius.circular(17),
