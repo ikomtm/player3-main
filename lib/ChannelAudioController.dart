@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'models/channel_strip_model.dart';
 
+const bool enableLogs = true;
+
 class ChannelAudioController {
   final AudioPlayer player;
   final ChannelStripModel model;
