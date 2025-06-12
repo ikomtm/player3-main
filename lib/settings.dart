@@ -884,6 +884,10 @@ Duration parseDuration(String text) {
                                         ),
                                       ),
 
+
+                                    ),
+
+
                                     // Fade Out
                                     Expanded(
                                       child: Align(alignment: Alignment.centerLeft,

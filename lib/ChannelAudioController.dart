@@ -56,6 +56,7 @@ class ChannelAudioController {
       await player.play();
       _startFadeIn(fadeInDur);
     } else {
+
       await player.setVolume(1.0);
       await player.play();
     }
@@ -73,9 +74,69 @@ class ChannelAudioController {
         player.setVolume(1.0);
         timer.cancel();
         _fadeInTimer = null;
-      }
+
+      await player.setVolume(1.0);
+      await player.play();
+          }
+    _completed = false;
+  }
+
+  /// Begin a fade-in over [duration].
+  void _startFadeIn(Duration duration) {
+    int elapsed = 0;
+    _fadeInTimer = Timer.periodic(const Duration(milliseconds: 20), (timer) {
+      elapsed += 20;
+      final vol = (elapsed / duration.inMilliseconds).clamp(0.0, 1.0);
+      player.setVolume(vol);
+      if (elapsed >= duration.inMilliseconds) {
+        player.setVolume(1.0);
+        timer.cancel();
+        _fadeInTimer = null;
+              }
     });
   }
+
+  /// Fade out the current playback and then either stop or pause.
+  Future<void> _fadeOutAndFinish({required bool pause}) async {
+    final fadeOutDur =
+        Duration(milliseconds: (model.fadeOutSeconds * 1000).round());
+    final startVol = player.volume;
+
+    if (fadeOutDur <= Duration.zero) {
+      if (pause) {
+        await player.pause();
+      } else {
+        await player.stop();
+      }
+      await player.seek(Duration.zero);
+      await player.setVolume(1.0);
+      return;
+          }
+
+    int elapsed = 0;
+    final completer = Completer<void>();
+    _fadeOutTimer = Timer.periodic(const Duration(milliseconds: 20), (timer) async {
+      elapsed += 20;
+      final progress = elapsed / fadeOutDur.inMilliseconds;
+      final vol = (startVol * (1.0 - progress)).clamp(0.0, 1.0);
+      player.setVolume(vol);
+      if (elapsed >= fadeOutDur.inMilliseconds) {
+        timer.cancel();
+        if (pause) {
+          await player.pause();
+        } else {
+          await player.stop();
+        }
+        await player.seek(Duration.zero);
+        await player.setVolume(1.0);
+        _fadeOutTimer = null;
+        completer.complete();
+
+      }
+    });
+    await completer.future;
+  }
+
 
   /// Fade out the current playback and then either stop or pause.
   Future<void> _fadeOutAndFinish({required bool pause}) async {
@@ -121,12 +182,19 @@ class ChannelAudioController {
   void _cancelFades() {
     _fadeInTimer?.cancel();
     _fadeOutTimer?.cancel();
+
     _fadeInTimer = null;
     _fadeOutTimer = null;
   }
 
   /// Public wrapper used by the settings UI to cancel any fade timers.
   void cancelFadeTimers() => _cancelFades();
+
+        _fadeInTimer = null;
+    _fadeOutTimer = null;
+  }
+
+
   /// Toggle playback according to the selected play mode.
   Future<void> toggle() async {
     _cancelFades();
