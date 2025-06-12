@@ -127,7 +127,6 @@ class ChannelAudioController {
 
   /// Public wrapper used by the settings UI to cancel any fade timers.
   void cancelFadeTimers() => _cancelFades();
-
   /// Toggle playback according to the selected play mode.
   Future<void> toggle() async {
     _cancelFades();

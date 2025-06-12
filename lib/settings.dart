@@ -786,105 +786,103 @@ Duration parseDuration(String text) {
                                       ),
                                      
                                     // Fade In
-                                    Expanded(
-                                      child: Align(alignment: Alignment.centerLeft,
-                                      child: IntrinsicWidth(
-                                      child: Container(
-                                        height: double.infinity,
-                                        key: const Key('Fade_In_row'),
-                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFFD9D9D9),
-                                          borderRadius: BorderRadius.circular(4),
-                                        ),
-                                        child: Row(
-                                          crossAxisAlignment: CrossAxisAlignment.center,
-                                          children: [
-                                            // Поле
-                                            SizedBox(
-                                              
-                                              width: 50,
-                                              height: 36,
-                                              child: TextField(
-                                                key: const Key('Fade_In_frame'),
-                                                controller: _fadeInController,
-                                                keyboardType: TextInputType.number,
-                                                textAlign: TextAlign.center,
-                                                style: const TextStyle(fontSize: 16, color: Colors.black),
-                                                decoration: const InputDecoration(
-                                                  
-                                                  border: OutlineInputBorder(),
-                                                  isDense: true,
-                                                  contentPadding: EdgeInsets.symmetric(vertical: 8),
+                                   Expanded(
+                                      child: Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: IntrinsicWidth(
+                                          child: Container(
+                                            height: double.infinity,
+                                            key: const Key('Fade_In_row'),
+                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFFD9D9D9),
+                                              borderRadius: BorderRadius.circular(4),
+                                            ),
+                                            child: Row(
+                                              crossAxisAlignment: CrossAxisAlignment.center,
+                                              children: [
+                                                // Поле
+                                                SizedBox(
+                                                  width: 50,
+                                                  height: 36,
+                                                  child: TextField(
+                                                    key: const Key('Fade_In_frame'),
+                                                    controller: _fadeInController,
+                                                    keyboardType: TextInputType.number,
+                                                    textAlign: TextAlign.center,
+                                                    style: const TextStyle(fontSize: 16, color: Colors.black),
+                                                    decoration: const InputDecoration(
+                                                      border: OutlineInputBorder(),
+                                                      isDense: true,
+                                                      contentPadding: EdgeInsets.symmetric(vertical: 8),
+                                                    ),
+                                                    onChanged: (value) {
+                                                      final newValue = double.tryParse(value) ?? 0;
+                                                      temp.fadeInSeconds = newValue;
+
+                                                      // Сброс таймеров и установка громкости
+                                                      temp.controller.cancelFadeTimers();
+                                                      temp.controller.player.setVolume(newValue > 0 ? 0.0 : 1.0);
+                                                    },
+                                                  ),
                                                 ),
-                                                onChanged: (value) {
-                                                  final newValue = double.tryParse(value) ?? 0;
-                                                  temp.fadeInSeconds = newValue;
+                                                const SizedBox(width: 6),
 
-                                                  // Cancel active fades and set volume for preview
-                                                  temp.controller.cancelFadeTimers();
-                                                  temp.controller.player.setVolume(newValue > 0 ? 0.0 : 1.0);
-                                                },
-                                              ),
-                                            ),
-                                            const SizedBox(width: 6),
-
-                                            // Кнопка <
-                                            SizedBox(
-                                              width: 32,
-                                              height: 36,
-                                              child: ElevatedButton(
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor: Colors.white,
-                                                  foregroundColor: Colors.black,
-                                                  padding: EdgeInsets.zero,
+                                                // Кнопка <
+                                                SizedBox(
+                                                  width: 32,
+                                                  height: 36,
+                                                  child: ElevatedButton(
+                                                    style: ElevatedButton.styleFrom(
+                                                      backgroundColor: Colors.white,
+                                                      foregroundColor: Colors.black,
+                                                      padding: EdgeInsets.zero,
+                                                    ),
+                                                    onPressed: () {
+                                                      final current = double.tryParse(_fadeInController.text) ?? 0;
+                                                      final newValue = (current - 1).clamp(0, 60).toDouble();
+                                                      _fadeInController.text = newValue.toInt().toString();
+                                                      temp.fadeInSeconds = newValue;
+                                                      temp.controller.cancelFadeTimers();
+                                                      temp.controller.player.setVolume(newValue > 0 ? 0.0 : 1.0);
+                                                    },
+                                                    child: const Icon(Icons.chevron_left),
+                                                  ),
                                                 ),
-                                                onPressed: () {
-                                                  final current = double.tryParse(_fadeInController.text) ?? 0;
-                                                  final newValue = (current - 1).clamp(0, 60).toDouble();
-                                                  _fadeInController.text = newValue.toInt().toString();
-                                                  temp.fadeInSeconds = newValue;
-                                                  temp.controller.cancelFadeTimers();
-                                                  temp.controller.player.setVolume(newValue > 0 ? 0.0 : 1.0);
-                                                },
-                                                child: const Icon(Icons.chevron_left),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 4),
+                                                const SizedBox(width: 4),
 
-                                            // Кнопка >
-                                            SizedBox(
-                                              width: 32,
-                                              height: 36,
-                                              child: ElevatedButton(
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor: Colors.white,
-                                                  foregroundColor: Colors.black,
-                                                  padding: EdgeInsets.zero,
+                                                // Кнопка >
+                                                SizedBox(
+                                                  width: 32,
+                                                  height: 36,
+                                                  child: ElevatedButton(
+                                                    style: ElevatedButton.styleFrom(
+                                                      backgroundColor: Colors.white,
+                                                      foregroundColor: Colors.black,
+                                                      padding: EdgeInsets.zero,
+                                                    ),
+                                                    onPressed: () {
+                                                      final current = double.tryParse(_fadeInController.text) ?? 0;
+                                                      final newValue = (current + 1).clamp(0, 60).toDouble();
+                                                      _fadeInController.text = newValue.toInt().toString();
+                                                      temp.fadeInSeconds = newValue;
+                                                      temp.controller.cancelFadeTimers();
+                                                      temp.controller.player.setVolume(newValue > 0 ? 0.0 : 1.0);
+                                                    },
+                                                    child: const Icon(Icons.chevron_right),
+                                                  ),
                                                 ),
-                                                onPressed: () {
-                                                  final current = double.tryParse(_fadeInController.text) ?? 0;
-                                                  final newValue = (current + 1).clamp(0, 60).toDouble();
-                                                  _fadeInController.text = newValue.toInt().toString();
-                                                  temp.fadeInSeconds = newValue;
-                                                  temp.controller.cancelFadeTimers();
-                                                  temp.controller.player.setVolume(newValue > 0 ? 0.0 : 1.0);
-                                                },
-                                                child: const Icon(Icons.chevron_right),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 8),
+                                                const SizedBox(width: 8),
 
-                                            const Text(
-                                              'seconds (0 – off, 60 – max)',
-                                              style: TextStyle(fontSize: 13, color: Colors.black),
+                                                const Text(
+                                                  'seconds (0 – off, 60 – max)',
+                                                  style: TextStyle(fontSize: 13, color: Colors.black),
+                                                ),
+                                              ],
                                             ),
-                                          ],
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                      ),
-                                    ),
 
                                     // Fade Out
                                     Expanded(
