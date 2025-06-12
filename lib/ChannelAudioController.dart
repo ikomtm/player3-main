@@ -22,11 +22,16 @@ class ChannelAudioController {
     });
   }
 
-  Future<void> loadSource() async {
+Future<void> loadSource() async {
+    final endTime =
+        (model.stopTime > Duration.zero && model.stopTime > model.startTime)
+            ? model.stopTime
+            : null;
+
     await player.setAudioSource(
       ClippingAudioSource(
         start: model.startTime,
-        end: model.stopTime,
+        end: endTime,
         child: AudioSource.file(model.filePath),
       ),
       initialPosition: Duration.zero,
@@ -113,7 +118,10 @@ class ChannelAudioController {
   Future<void> applyFadeInOut() async {
     final fadeIn = Duration(milliseconds: (model.fadeInSeconds * 1000).round());
     final fadeOut = Duration(milliseconds: (model.fadeOutSeconds * 1000).round());
-    final total = model.stopTime - model.startTime;
+    final total = (model.stopTime > Duration.zero &&
+            model.stopTime > model.startTime)
+        ? model.stopTime - model.startTime
+        : Duration.zero;
 
     if (fadeIn > Duration.zero) {
       int ms = 0;
