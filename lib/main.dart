@@ -5,6 +5,7 @@ import 'channel1.dart';
 import 'models/channel_bank_model.dart';
 import 'models/channel_strip_model.dart';
 
+
 void main() {
   runApp(
     ChangeNotifierProvider(

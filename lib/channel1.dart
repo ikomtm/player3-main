@@ -239,8 +239,10 @@ class Channel1 extends StatelessWidget {
           
           InkWell(
             onTap: () async {
-              final channel = context.read<ChannelBankModel>().channels[index];             
+              final channel = context.read<ChannelBankModel>().channels[index];  
+              debugPrint('[Channel ${channel.name}] === Button Pressed ===');           
               if (channel.filePath.isEmpty) return;
+              
               await channel.controller.toggle(); // вызов логики из контроллера              
             },
           
